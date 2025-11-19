@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aminoglycosides Dose Calculator</title>
+<style>
+* { box-sizing: border-box; margin:0; padding:0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;}
+body { background: linear-gradient(135deg,#667eea,#764ba2); color:#333; min-height:100vh; padding:20px;}
+.container { max-width:900px; margin:0 auto; background:white; border-radius:15px; box-shadow:0 10px 30px rgba(0,0,0,0.2); overflow:hidden; padding:20px;}
+header { text-align:center; margin-bottom:20px;}
+h1 { font-size:28px; margin-bottom:10px;}
+.subtitle { font-size:14px; opacity:0.9; text-align:center; margin-bottom:20px;}
+.calculator { }
+.form-group { margin-bottom:14px; }
+label { display:block; margin-bottom:6px; font-weight:600; color:#2c3e50; }
+input, select { width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:8px; font-size:15px; transition:border 0.3s; }
+input:focus, select:focus { border-color:#667eea; outline:none; box-shadow:0 0 0 2px rgba(102,126,234,0.15);}
+button { background:#667eea; color:white; border:none; padding:12px 18px; border-radius:8px; font-size:16px; font-weight:600; cursor:pointer; width:100%; transition: background 0.3s; margin-top:10px;}
+button:hover { background:#5a6fd8;}
+.results { display:none; margin-bottom:20px; }
+.result-grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:20px; }
+.result-box { padding:15px; border-radius:10px; color:white; text-align:center; font-weight:600; min-height:80px; display:flex; flex-direction:column; justify-content:center;}
+.weightUsed { background:#6c5ce7;}
+.doseResult { background:#00b894;}
+.intervalResult { background:#0984e3;}
+.vdResult { background:#fd79a8;}
+.clResult { background:#e17055;}
+.keResult { background:#00cec9;}
+.tHalfResult { background:#d63031;}
+.aucResult { background:#e84393;}
+.cmaxResult { background:#2d3436;}
+.tmaxResult { background:#fdcb6e;}
+.kaResult { background:#00b894;}
+.fResult { background:#0984e3;}
+.maxDose { background:#fab1a0; color:#2d3436; line-height:1.4;}
+.toxicLevel { background:#ff7675;}
+.warning { background:#fff3cd; color:#856404; padding:12px; border-radius:8px; margin-top:14px; border:1px solid #ffeaa7; text-align:center; font-weight:600; }
+@media(max-width:768px){.row{flex-direction:column;}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+<h1>Aminoglycosides Dose Calculator</h1>
+<p class="subtitle">Uses actual weight; choose PO (tablet) or IV (injection). Max dose & toxic levels included.</p>
+</header>
+
+<div class="results" id="resultsDiv">
+    <div class="result-grid">
+        <div class="result-box weightUsed" id="weightUsed">-</div>
+        <div class="result-box doseResult" id="doseResult">-</div>
+        <div class="result-box intervalResult" id="intervalResult">-</div>
+        <div class="result-box vdResult" id="vdResult">-</div>
+        <div class="result-box clResult" id="clResult">-</div>
+        <div class="result-box keResult" id="keResult">-</div>
+        <div class="result-box tHalfResult" id="tHalfResult">-</div>
+        <div class="result-box aucResult" id="aucResult">-</div>
+        <div class="result-box cmaxResult" id="cmaxResult">-</div>
+        <div class="result-box tmaxResult" id="tmaxResult">-</div>
+        <div class="result-box kaResult" id="kaResult">-</div>
+        <div class="result-box fResult" id="fResult">-</div>
+        <div class="result-box maxDose" id="maxDose">-</div>
+        <div class="result-box toxicLevel" id="toxicLevel">-</div>
+    </div>
+    <button onclick="showForm()">Back to Form</button>
+</div>
+
+<div class="calculator" id="formDiv">
+    <div class="form-group">
+        <label for="drugType">Drug Type</label>
+        <select id="drugType">
+            <option value="gentamicin">Gentamicin</option>
+            <option value="tobramycin">Tobramycin</option>
+            <option value="amikacin">Amikacin</option>
+        </select>
+    </div>
+    <div class="row">
+        <div class="col form-group">
+            <label for="age">Age (years)</label>
+            <input type="number" id="age" min="0" max="120" placeholder="Enter age">
+        </div>
+        <div class="col form-group">
+            <label for="weight">Weight (kg)</label>
+            <input type="number" id="weight" min="10" max="300" placeholder="Enter weight">
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="route">Route</label>
+        <select id="route">
+            <option value="iv">IV (Injection)</option>
+            <option value="po">PO (Tablet)</option>
+        </select>
+    </div>
+    <button onclick="calculateDose()">Calculate Dose</button>
+</div>
+
+
+<div class="warning">⚠ This calculator is for educational purposes only. Final dose must be confirmed by a physician.</div>
+
+</div>
+
+<script>
+function calculateDose(){
+    const drugType=document.getElementById('drugType').value;
+    const age=parseFloat(document.getElementById('age').value)||0;
+    const weight=parseFloat(document.getElementById('weight').value)||0;
+    const route=document.getElementById('route').value;
+
+    const F=route==='iv'?1:0.5;
+    const ka=route==='iv'?null:1;
+    const CrCl_assumed=100;
+
+    let doseMgKg;
+    switch(drugType){
+        case 'gentamicin':
+        case 'tobramycin': doseMgKg=5; break;
+        case 'amikacin': doseMgKg=15; break;
+        default:doseMgKg=5;
+    }
+
+    const dose=Math.round(doseMgKg*weight);
+    const vdPerKg=0.25;
+    const Vd_L=+(vdPerKg*weight).toFixed(3);
+    const CL_L_per_hr=+(CrCl_assumed*0.06*0.85).toFixed(4);
+    const ke=CL_L_per_hr/Vd_L;
+    const tHalf=ke>0?Math.log(2)/ke:NaN;
+    const AUC=CL_L_per_hr>0?+(dose/CL_L_per_hr).toFixed(3):NaN;
+    const Cmax=Vd_L>0?+(dose/Vd_L).toFixed(3):NaN;
+    let Tmax=NaN;
+    if(ka && ke>0 && ka>ke){Tmax=Math.log(ka/ke)/(ka-ke);}
+
+    // Max Dose & Toxic levels
+    let maxDoseAdult=490; // example
+    let maxDoseChild=420; // example
+    let toxicAdult=800; 
+    let toxicChild=600;
+
+    document.getElementById('weightUsed').textContent='Weight: '+weight+' kg';
+    document.getElementById('doseResult').textContent='Dose: '+dose+' mg ('+doseMgKg+' mg/kg)';
+    document.getElementById('intervalResult').textContent='Interval: Every 24h';
+    document.getElementById('vdResult').textContent='Vd: '+Vd_L+' L';
+    document.getElementById('clResult').textContent='CL: '+CL_L_per_hr+' L/hr';
+    document.getElementById('keResult').textContent='ke: '+(isFinite(ke)?ke.toFixed(4):'-');
+    document.getElementById('tHalfResult').textContent='t½: '+(isFinite(tHalf)?tHalf.toFixed(2)+' h':'-');
+    document.getElementById('aucResult').textContent='AUC: '+(isFinite(AUC)?AUC:'-');
+    document.getElementById('cmaxResult').textContent='Cmax: '+(isFinite(Cmax)?Cmax:'-');
+    document.getElementById('tmaxResult').textContent='Tmax: '+(isFinite(Tmax)?Tmax.toFixed(2)+' h':(route==='iv'?'IV — N/A':'-'));
+    document.getElementById('kaResult').textContent='ka: '+(ka?ka:'IV — N/A');
+    document.getElementById('fResult').textContent='F: '+F;
+    document.getElementById('maxDose').innerHTML='Max Dose:<br><span>Adult: '+maxDoseAdult+' mg</span><span>Child: '+maxDoseChild+' mg</span>';
+    document.getElementById('toxicLevel').innerHTML='Toxic Level:<br><span>Adult: '+toxicAdult+' mg</span><span>Child: '+toxicChild+' mg</span>';
+
+    document.getElementById('resultsDiv').style.display='block';
+    document.getElementById('formDiv').style.display='none';
+}
+
+function showForm(){
+    document.getElementById('resultsDiv').style.display='none';
+    document.getElementById('formDiv').style.display='block';
+}
+</script>
+
+</body>
+</html>
