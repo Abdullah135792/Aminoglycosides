@@ -4,163 +4,423 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Aminoglycosides Dose Calculator</title>
+
 <style>
-* { box-sizing: border-box; margin:0; padding:0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;}
-body { background: linear-gradient(135deg,#667eea,#764ba2); color:#333; min-height:100vh; padding:20px;}
-.container { max-width:900px; margin:0 auto; background:white; border-radius:15px; box-shadow:0 10px 30px rgba(0,0,0,0.2); overflow:hidden; padding:20px;}
-header { text-align:center; margin-bottom:20px;}
-h1 { font-size:28px; margin-bottom:10px;}
-.subtitle { font-size:14px; opacity:0.9; text-align:center; margin-bottom:20px;}
-.calculator { }
-.form-group { margin-bottom:14px; }
-label { display:block; margin-bottom:6px; font-weight:600; color:#2c3e50; }
-input, select { width:100%; padding:10px 12px; border:1px solid #ddd; border-radius:8px; font-size:15px; transition:border 0.3s; }
-input:focus, select:focus { border-color:#667eea; outline:none; box-shadow:0 0 0 2px rgba(102,126,234,0.15);}
-button { background:#667eea; color:white; border:none; padding:12px 18px; border-radius:8px; font-size:16px; font-weight:600; cursor:pointer; width:100%; transition: background 0.3s; margin-top:10px;}
-button:hover { background:#5a6fd8;}
-.results { display:none; margin-bottom:20px; }
-.result-grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:20px; }
-.result-box { padding:15px; border-radius:10px; color:white; text-align:center; font-weight:600; min-height:80px; display:flex; flex-direction:column; justify-content:center;}
-.weightUsed { background:#6c5ce7;}
-.doseResult { background:#00b894;}
-.intervalResult { background:#0984e3;}
-.vdResult { background:#fd79a8;}
-.clResult { background:#e17055;}
-.keResult { background:#00cec9;}
-.tHalfResult { background:#d63031;}
-.aucResult { background:#e84393;}
-.cmaxResult { background:#2d3436;}
-.tmaxResult { background:#fdcb6e;}
-.kaResult { background:#00b894;}
-.fResult { background:#0984e3;}
-.maxDose { background:#fab1a0; color:#2d3436; line-height:1.4;}
-.toxicLevel { background:#ff7675;}
-.warning { background:#fff3cd; color:#856404; padding:12px; border-radius:8px; margin-top:14px; border:1px solid #ffeaa7; text-align:center; font-weight:600; }
-@media(max-width:768px){.row{flex-direction:column;}}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,Verdana,sans-serif;}
+body{background:linear-gradient(135deg,#667eea,#764ba2);color:#333;min-height:100vh;padding:20px;}
+.container{max-width:1000px;margin:0 auto;background:white;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,0.2);overflow:hidden;padding:20px;}
+header{text-align:center;margin-bottom:20px;}
+h1{font-size:28px;margin-bottom:10px;}
+.subtitle{font-size:14px;opacity:0.9;margin-bottom:20px;}
+.form-group{margin-bottom:14px;}
+label{display:block;margin-bottom:6px;font-weight:600;color:#2c3e50;}
+input,select{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:15px;}
+button{background:#667eea;color:white;border:none;padding:12px;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;width:100%;margin-top:10px;transition:background 0.3s;}
+button:hover{background:#5a6fd8;}
+
+.results{display:none;margin-bottom:20px;}
+.section-title{font-size:20px;font-weight:700;margin:25px 0 15px;color:#2c3e50;border-bottom:2px solid #667eea;padding-bottom:8px;}
+.result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-bottom:20px;}
+.result-card{background:#f8f9fa;border-radius:10px;padding:20px;box-shadow:0 3px 10px rgba(0,0,0,0.08);border-left:4px solid;display:flex;flex-direction:column;justify-content:space-between;min-height:140px;}
+.result-value{font-size:24px;font-weight:700;color:#2c3e50;margin-bottom:5px;}
+.result-label{font-size:14px;color:#666;margin-bottom:8px;}
+.result-unit{font-size:14px;color:#888;font-weight:500;}
+.result-note{font-size:12px;color:#888;margin-top:5px;font-style:italic;}
+
+/* Color coding for cards */
+.dosing-card{border-left-color:#00b894;background-color:#e8f6f3;}
+.pk-card{border-left-color:#0984e3;background-color:#e3f2fd;}
+.clinical-card{border-left-color:#fd79a8;background-color:#fce4ec;}
+.safety-card{border-left-color:#fdcb6e;background-color:#fff8e1;}
+
+.warning-section{background:#fff3cd;border-radius:10px;padding:20px;margin-top:20px;border-left:4px solid #ffc107;}
+.warning-title{font-size:18px;font-weight:700;margin-bottom:15px;color:#856404;}
+.warning-item{margin-bottom:12px;}
+.warning-label{font-weight:600;color:#856404;}
+.warning-value{color:#333;margin-top:3px;}
+.clinical-notes{background:#d1ecf1;border-radius:10px;padding:15px;margin-top:15px;border-left:4px solid #0c5460;}
+.notes-title{font-size:16px;font-weight:700;margin-bottom:10px;color:#0c5460;}
+.note-item{margin-bottom:5px;font-size:14px;}
+
+.instructions{background:#e8f4fd;border-left:4px solid #2196F3;padding:12px;margin:15px 0;border-radius:4px;}
+.instructions h3{margin-top:0;color:#1976D2;}
+
+.form-section{background:#f8f9fa;padding:15px;border-radius:8px;margin-bottom:20px;}
+.form-section h3{color:#2c3e50;margin-bottom:10px;}
+
+@media (max-width: 768px) {
+    .result-grid{grid-template-columns:1fr;}
+}
 </style>
 </head>
+
 <body>
 <div class="container">
 
 <header>
 <h1>Aminoglycosides Dose Calculator</h1>
-<p class="subtitle">Uses actual weight; choose PO (tablet) or IV (injection). Max dose & toxic levels included.</p>
+<p class="subtitle">Includes renal adjustment, TDM warnings & pharmacokinetics.</p>
 </header>
 
+<!-- RESULTS -->
 <div class="results" id="resultsDiv">
+    <div class="section-title">Dosing Information</div>
     <div class="result-grid">
-        <div class="result-box weightUsed" id="weightUsed">-</div>
-        <div class="result-box doseResult" id="doseResult">-</div>
-        <div class="result-box intervalResult" id="intervalResult">-</div>
-        <div class="result-box vdResult" id="vdResult">-</div>
-        <div class="result-box clResult" id="clResult">-</div>
-        <div class="result-box keResult" id="keResult">-</div>
-        <div class="result-box tHalfResult" id="tHalfResult">-</div>
-        <div class="result-box aucResult" id="aucResult">-</div>
-        <div class="result-box cmaxResult" id="cmaxResult">-</div>
-        <div class="result-box tmaxResult" id="tmaxResult">-</div>
-        <div class="result-box kaResult" id="kaResult">-</div>
-        <div class="result-box fResult" id="fResult">-</div>
-        <div class="result-box maxDose" id="maxDose">-</div>
-        <div class="result-box toxicLevel" id="toxicLevel">-</div>
+        <div class="result-card dosing-card">
+            <div class="result-label">Patient Weight</div>
+            <div class="result-value" id="weightResult">-</div>
+            <div class="result-unit">kg</div>
+        </div>
+        <div class="result-card dosing-card">
+            <div class="result-label">Total Dose</div>
+            <div class="result-value" id="totalDoseResult">-</div>
+            <div class="result-unit">mg</div>
+        </div>
+        <div class="result-card dosing-card">
+            <div class="result-label">Dose per kg</div>
+            <div class="result-value" id="dosePerKgResult">-</div>
+            <div class="result-unit">mg/kg</div>
+        </div>
+        <div class="result-card dosing-card">
+            <div class="result-label">Dosing Interval</div>
+            <div class="result-value" id="intervalResult">-</div>
+            <div class="result-unit" id="intervalNote">-</div>
+        </div>
     </div>
-    <button onclick="showForm()">Back to Form</button>
+
+    <div class="section-title">Basic PK Parameters</div>
+    <div class="result-grid">
+        <div class="result-card pk-card">
+            <div class="result-label">Clearance (CL)</div>
+            <div class="result-value" id="clearanceResult">-</div>
+            <div class="result-unit">L/hr</div>
+        </div>
+        <div class="result-card pk-card">
+            <div class="result-label">Volume of Distribution (Vd)</div>
+            <div class="result-value" id="volumeResult">-</div>
+            <div class="result-unit">L (0.25 L/kg)</div>
+        </div>
+        <div class="result-card pk-card">
+            <div class="result-label">Elimination Rate (ke)</div>
+            <div class="result-value" id="keResult">-</div>
+            <div class="result-unit">hr⁻¹</div>
+        </div>
+        <div class="result-card pk-card">
+            <div class="result-label">Half-life (t½)</div>
+            <div class="result-value" id="tHalfResult">-</div>
+            <div class="result-unit">hours</div>
+        </div>
+    </div>
+
+    <div class="section-title">Clinical PK Parameters</div>
+    <div class="result-grid">
+        <div class="result-card clinical-card">
+            <div class="result-label">Peak Concentration (Cmax)</div>
+            <div class="result-value" id="cmaxResult">-</div>
+            <div class="result-unit">mg/L</div>
+            <div class="result-note" id="cmaxNote">-</div>
+        </div>
+        <div class="result-card clinical-card">
+            <div class="result-label">Trough Concentration</div>
+            <div class="result-value" id="troughResult">-</div>
+            <div class="result-unit">mg/L</div>
+            <div class="result-note" id="troughNote">-</div>
+        </div>
+        <div class="result-card clinical-card">
+            <div class="result-label">AUC (Drug Exposure)</div>
+            <div class="result-value" id="aucResult">-</div>
+            <div class="result-unit">mg·hr/L</div>
+            <div class="result-note">Total drug exposure</div>
+        </div>
+        <div class="result-card clinical-card">
+            <div class="result-label">Creatinine Clearance</div>
+            <div class="result-value" id="crclResult">-</div>
+            <div class="result-unit">mL/min</div>
+            <div class="result-note" id="renalNote">-</div>
+        </div>
+    </div>
+
+    <div class="section-title">Safety Information</div>
+    <div class="result-grid">
+        <div class="result-card safety-card">
+            <div class="result-label">Therapeutic Peak</div>
+            <div class="result-value" id="therapeuticPeak">-</div>
+            <div class="result-unit">mg/L</div>
+            <div class="result-note" id="drugTypeName">-</div>
+        </div>
+        <div class="result-card safety-card">
+            <div class="result-label">Toxic Trough</div>
+            <div class="result-value">>2 mg/L</div>
+            <div class="result-unit">Gentamicin/Tobramycin</div>
+            <div class="result-note">>10 mg/L (Amikacin)</div>
+        </div>
+        <div class="result-card safety-card">
+            <div class="result-label">Maximum Daily Dose</div>
+            <div class="result-value" id="maxDailyDose">-</div>
+            <div class="result-unit">mg/day</div>
+            <div class="result-note">Based on weight & drug</div>
+        </div>
+        <div class="result-card safety-card">
+            <div class="result-label">Nephrotoxicity Risk</div>
+            <div class="result-value" id="nephroRisk">-</div>
+            <div class="result-unit" id="riskLevel">-</div>
+            <div class="result-note">Based on CrCl</div>
+        </div>
+    </div>
+
+    <div class="warning-section">
+        <div class="warning-title">Critical Warnings for Aminoglycosides</div>
+        <div class="warning-item">
+            <div class="warning-label">Nephrotoxicity:</div>
+            <div class="warning-value">Dose-related renal damage. Monitor serum creatinine every 2-3 days.</div>
+        </div>
+        <div class="warning-item">
+            <div class="warning-label">Ototoxicity:</div>
+            <div class="warning-value">Irreversible hearing loss and vestibular damage. More common with prolonged therapy.</div>
+        </div>
+        <div class="warning-item">
+            <div class="warning-label">Route Specific:</div>
+            <div class="warning-value" id="routeWarning">-</div>
+        </div>
+    </div>
+
+    <div class="clinical-notes">
+        <div class="notes-title">Clinical Monitoring Guidelines</div>
+        <div class="note-item">• Monitor peak (30 min post-infusion) and trough (pre-dose) levels</div>
+        <div class="note-item">• Check serum creatinine every 2-3 days during therapy</div>
+        <div class="note-item">• Adjust dose based on CrCl changes</div>
+        <div class="note-item">• Avoid concurrent nephrotoxic drugs (vancomycin, NSAIDs, contrast media)</div>
+        <div class="note-item">• Consider alternative antibiotics if CrCl &lt; 30 mL/min</div>
+        <div class="note-item" id="routeNote">-</div>
+    </div>
+
+    <button onclick="showForm()" style="margin-top: 20px;">Back to Form</button>
 </div>
 
+<!-- FORM -->
 <div class="calculator" id="formDiv">
-    <div class="form-group">
-        <label for="drugType">Drug Type</label>
-        <select id="drugType">
-            <option value="gentamicin">Gentamicin</option>
-            <option value="tobramycin">Tobramycin</option>
-            <option value="amikacin">Amikacin</option>
-        </select>
+    <div class="instructions">
+        <h3>Instructions:</h3>
+        <p>Enter patient information to calculate the appropriate aminoglycoside dose based on renal function.</p>
     </div>
-    <div class="row">
-        <div class="col form-group">
-            <label for="age">Age (years)</label>
-            <input type="number" id="age" min="0" max="120" placeholder="Enter age">
+
+    <div class="form-section">
+        <h3>Patient Information</h3>
+        <div class="form-group">
+            <label>Gender</label>
+            <select id="gender">
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+            </select>
         </div>
-        <div class="col form-group">
-            <label for="weight">Weight (kg)</label>
-            <input type="number" id="weight" min="10" max="300" placeholder="Enter weight">
+
+        <div class="form-group">
+            <label>Age (years)</label>
+            <input type="number" id="age" min="0" max="120" placeholder="Enter age in years">
+        </div>
+
+        <div class="form-group">
+            <label>Body Weight (kg)</label>
+            <input type="number" id="weight" min="10" max="300" placeholder="Enter weight in kg">
+        </div>
+
+        <div class="form-group">
+            <label>Creatinine Clearance (CrCl) mL/min</label>
+            <input type="number" id="crcl" min="1" max="200" placeholder="Enter CrCl value">
         </div>
     </div>
-    <div class="form-group">
-        <label for="route">Route</label>
-        <select id="route">
-            <option value="iv">IV (Injection)</option>
-            <option value="po">PO (Tablet)</option>
-        </select>
+
+    <div class="form-section">
+        <h3>Drug Information</h3>
+        <div class="form-group">
+            <label>Drug Type</label>
+            <select id="drugType">
+                <option value="gentamicin">Gentamicin</option>
+                <option value="tobramycin">Tobramycin</option>
+                <option value="amikacin">Amikacin</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Route</label>
+            <select id="route">
+                <option value="iv">IV (Intravenous)</option>
+                <option value="oral">Oral</option>
+            </select>
+        </div>
     </div>
+
     <button onclick="calculateDose()">Calculate Dose</button>
 </div>
-
-
-<div class="warning">⚠ This calculator is for educational purposes only. Final dose must be confirmed by a physician.</div>
 
 </div>
 
 <script>
 function calculateDose(){
-    const drugType=document.getElementById('drugType').value;
-    const age=parseFloat(document.getElementById('age').value)||0;
-    const weight=parseFloat(document.getElementById('weight').value)||0;
-    const route=document.getElementById('route').value;
+    const gender = document.getElementById("gender").value;
+    const age = parseFloat(document.getElementById("age").value);
+    const weight = parseFloat(document.getElementById("weight").value);
+    const CrCl = parseFloat(document.getElementById("crcl").value);
+    const drug = document.getElementById("drugType").value;
+    const route = document.getElementById("route").value;
 
-    const F=route==='iv'?1:0.5;
-    const ka=route==='iv'?null:1;
-    const CrCl_assumed=100;
-
-    let doseMgKg;
-    switch(drugType){
-        case 'gentamicin':
-        case 'tobramycin': doseMgKg=5; break;
-        case 'amikacin': doseMgKg=15; break;
-        default:doseMgKg=5;
+    // Validation
+    if(!age || !weight || !CrCl) {
+        alert("Please fill in all required fields: Age, Weight and Creatinine Clearance (CrCl)");
+        return;
     }
 
-    const dose=Math.round(doseMgKg*weight);
-    const vdPerKg=0.25;
-    const Vd_L=+(vdPerKg*weight).toFixed(3);
-    const CL_L_per_hr=+(CrCl_assumed*0.06*0.85).toFixed(4);
-    const ke=CL_L_per_hr/Vd_L;
-    const tHalf=ke>0?Math.log(2)/ke:NaN;
-    const AUC=CL_L_per_hr>0?+(dose/CL_L_per_hr).toFixed(3):NaN;
-    const Cmax=Vd_L>0?+(dose/Vd_L).toFixed(3):NaN;
-    let Tmax=NaN;
-    if(ka && ke>0 && ka>ke){Tmax=Math.log(ka/ke)/(ka-ke);}
+    // Route-specific parameters
+    let routeWarning, routeNote, bioavailability;
+    
+    if (route === "oral") {
+        routeWarning = "Oral aminoglycosides have poor systemic absorption (<1%). Used for gut decontamination only.";
+        routeNote = "• Oral route: Poor systemic absorption, used for GI tract sterilization only";
+        bioavailability = 0.01; // 1% for oral
+    } else {
+        routeWarning = "IV administration: Infuse over 30-60 minutes. Monitor for infusion reactions.";
+        routeNote = "• IV route: 100% bioavailability, infuse over 30-60 minutes";
+        bioavailability = 1.0;
+    }
 
-    // Max Dose & Toxic levels
-    let maxDoseAdult=490; // example
-    let maxDoseChild=420; // example
-    let toxicAdult=800; 
-    let toxicChild=600;
+    // Drug-specific parameters
+    let therapeuticPeak, therapeuticTrough, maxDailyDose, drugName;
+    
+    if (drug === "amikacin") {
+        therapeuticPeak = "20-30";
+        therapeuticTrough = "<10";
+        maxDailyDose = Math.min(1500, 15 * weight);
+        drugName = "Amikacin";
+    } else {
+        // Gentamicin or Tobramycin - using extended interval dosing as default
+        therapeuticPeak = "16-24";
+        therapeuticTrough = "<2";
+        maxDailyDose = Math.min(480, 7 * weight);
+        drugName = drug === "gentamicin" ? "Gentamicin" : "Tobramycin";
+    }
 
-    document.getElementById('weightUsed').textContent='Weight: '+weight+' kg';
-    document.getElementById('doseResult').textContent='Dose: '+dose+' mg ('+doseMgKg+' mg/kg)';
-    document.getElementById('intervalResult').textContent='Interval: Every 24h';
-    document.getElementById('vdResult').textContent='Vd: '+Vd_L+' L';
-    document.getElementById('clResult').textContent='CL: '+CL_L_per_hr+' L/hr';
-    document.getElementById('keResult').textContent='ke: '+(isFinite(ke)?ke.toFixed(4):'-');
-    document.getElementById('tHalfResult').textContent='t½: '+(isFinite(tHalf)?tHalf.toFixed(2)+' h':'-');
-    document.getElementById('aucResult').textContent='AUC: '+(isFinite(AUC)?AUC:'-');
-    document.getElementById('cmaxResult').textContent='Cmax: '+(isFinite(Cmax)?Cmax:'-');
-    document.getElementById('tmaxResult').textContent='Tmax: '+(isFinite(Tmax)?Tmax.toFixed(2)+' h':(route==='iv'?'IV — N/A':'-'));
-    document.getElementById('kaResult').textContent='ka: '+(ka?ka:'IV — N/A');
-    document.getElementById('fResult').textContent='F: '+F;
-    document.getElementById('maxDose').innerHTML='Max Dose:<br><span>Adult: '+maxDoseAdult+' mg</span><span>Child: '+maxDoseChild+' mg</span>';
-    document.getElementById('toxicLevel').innerHTML='Toxic Level:<br><span>Adult: '+toxicAdult+' mg</span><span>Child: '+toxicChild+' mg</span>';
+    // Adjust for oral route - different dosing
+    if (route === "oral") {
+        // Oral aminoglycosides have different dosing (for gut decontamination)
+        therapeuticPeak = "N/A";
+        therapeuticTrough = "N/A";
+        maxDailyDose = drug === "amikacin" ? 1500 : 500;
+        drugName += " (Oral)";
+    }
 
-    document.getElementById('resultsDiv').style.display='block';
-    document.getElementById('formDiv').style.display='none';
+    /* Dose mg/kg and Interval based on CrCl - Using Extended Interval Dosing as default */
+    let mgkg, interval, intervalNote, nephroRisk, riskLevel;
+
+    if (route === "oral") {
+        // Oral dosing for gut decontamination
+        mgkg = drug === "amikacin" ? 15 : 5;
+        interval = "Every 6h";
+        intervalNote = "For gut sterilization";
+        nephroRisk = "Low";
+        riskLevel = "Minimal systemic absorption";
+    } else {
+        // Extended Interval (Once Daily) Dosing - Based on CrCl
+        if (CrCl > 60) {
+            mgkg = drug === "amikacin" ? 15 : 7;
+            interval = "Every 24h";
+            intervalNote = "Once daily";
+        } else if (CrCl >= 40 && CrCl <= 60) {
+            mgkg = drug === "amikacin" ? 15 : 7;
+            interval = "Every 36h";
+            intervalNote = "Extended interval";
+        } else if (CrCl >= 20 && CrCl < 40) {
+            mgkg = drug === "amikacin" ? 15 : 7;
+            interval = "Every 48h";
+            intervalNote = "Renal adjustment";
+        } else if (CrCl >= 10 && CrCl < 20) {
+            mgkg = drug === "amikacin" ? 7.5 : 3.5;
+            interval = "Every 48h";
+            intervalNote = "Severe renal impairment";
+        } else {
+            mgkg = drug === "amikacin" ? 7.5 : 3.5;
+            interval = "By levels";
+            intervalNote = "Monitor closely";
+        }
+
+        // Nephrotoxicity risk assessment
+        if (CrCl > 60) {
+            nephroRisk = "Low";
+            riskLevel = "Monitor renal function";
+        } else if (CrCl >= 30 && CrCl <= 60) {
+            nephroRisk = "Moderate";
+            riskLevel = "Increased monitoring";
+        } else if (CrCl >= 15 && CrCl < 30) {
+            nephroRisk = "High";
+            riskLevel = "Consider alternatives";
+        } else {
+            nephroRisk = "Very High";
+            riskLevel = "Avoid if possible";
+        }
+    }
+
+    const dose = Math.round(mgkg * weight);
+
+    // Pharmacokinetic calculations for aminoglycosides
+    const Vd = (0.25 * weight).toFixed(1);  // Vd for aminoglycosides is 0.25 L/kg
+    const CL = (CrCl * 0.06).toFixed(1);    // CL proportional to CrCl
+    const ke = (CL/Vd).toFixed(4);
+    const tHalf = (0.693/(CL/Vd)).toFixed(1);
+
+    const AUC = (dose * bioavailability / CL).toFixed(1);
+    
+    // Cmax estimation (peak concentration)
+    let Cmax = (dose * bioavailability / Vd).toFixed(1);
+    
+    // Trough estimation
+    let trough;
+    if (route === "oral") {
+        trough = "N/A";
+    } else {
+        const dosingInterval = interval.includes("24") ? 24 : 
+                              interval.includes("36") ? 36 : 
+                              interval.includes("48") ? 48 : 8;
+        trough = (Cmax * Math.exp(-ke * dosingInterval)).toFixed(2);
+    }
+
+    // Update results
+    document.getElementById("weightResult").textContent = weight.toFixed(1);
+    document.getElementById("totalDoseResult").textContent = dose;
+    document.getElementById("dosePerKgResult").textContent = mgkg.toFixed(1);
+    document.getElementById("intervalResult").textContent = interval;
+    document.getElementById("intervalNote").textContent = intervalNote + " (" + route.toUpperCase() + ")";
+    
+    document.getElementById("clearanceResult").textContent = CL;
+    document.getElementById("volumeResult").textContent = Vd;
+    document.getElementById("keResult").textContent = ke;
+    document.getElementById("tHalfResult").textContent = tHalf;
+    
+    document.getElementById("cmaxResult").textContent = Cmax;
+    document.getElementById("cmaxNote").textContent = route === "oral" ? "Poor systemic absorption" : `Target: ${therapeuticPeak} mg/L`;
+    document.getElementById("troughResult").textContent = trough;
+    document.getElementById("troughNote").textContent = route === "oral" ? "Not monitored" : `Target: ${therapeuticTrough} mg/L`;
+    document.getElementById("aucResult").textContent = AUC;
+    document.getElementById("crclResult").textContent = CrCl.toFixed(0);
+    document.getElementById("renalNote").textContent = nephroRisk + " risk";
+    
+    document.getElementById("therapeuticPeak").textContent = therapeuticPeak;
+    document.getElementById("drugTypeName").textContent = drugName;
+    document.getElementById("maxDailyDose").textContent = Math.round(maxDailyDose);
+    document.getElementById("nephroRisk").textContent = nephroRisk;
+    document.getElementById("riskLevel").textContent = riskLevel;
+    
+    document.getElementById("routeWarning").textContent = routeWarning;
+    document.getElementById("routeNote").textContent = routeNote;
+
+    document.getElementById("resultsDiv").style.display="block";
+    document.getElementById("formDiv").style.display="none";
 }
 
 function showForm(){
-    document.getElementById('resultsDiv').style.display='none';
-    document.getElementById('formDiv').style.display='block';
+    document.getElementById("resultsDiv").style.display="none";
+    document.getElementById("formDiv").style.display="block";
 }
 </script>
 
 </body>
 </html>
+
