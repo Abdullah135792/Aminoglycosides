@@ -32,6 +32,10 @@ button:hover{background:#5a6fd8;}
 .pk-card{border-left-color:#0984e3;background-color:#e3f2fd;}
 .clinical-card{border-left-color:#fd79a8;background-color:#fce4ec;}
 .safety-card{border-left-color:#fdcb6e;background-color:#fff8e1;}
+.low-risk{border-left-color:#00b894;background-color:#e8f6f3;}
+.moderate-risk{border-left-color:#fdcb6e;background-color:#fff8e1;}
+.high-risk{border-left-color:#fd79a8;background-color:#fce4ec;}
+.very-high-risk{border-left-color:#e17055;background-color:#ffebee;}
 
 .warning-section{background:#fff3cd;border-radius:10px;padding:20px;margin-top:20px;border-left:4px solid #ffc107;}
 .warning-title{font-size:18px;font-weight:700;margin-bottom:15px;color:#856404;}
@@ -160,7 +164,7 @@ button:hover{background:#5a6fd8;}
             <div class="result-unit">mg/day</div>
             <div class="result-note">Based on weight & drug</div>
         </div>
-        <div class="result-card safety-card">
+        <div class="result-card" id="nephroCard">
             <div class="result-label">Nephrotoxicity Risk</div>
             <div class="result-value" id="nephroRisk">-</div>
             <div class="result-unit" id="riskLevel">-</div>
@@ -292,7 +296,7 @@ function calculateDose(){
         maxDailyDose = Math.min(1500, 15 * weight);
         drugName = "Amikacin";
     } else {
-        // Gentamicin or Tobramycin - using extended interval dosing as default
+        // Gentamicin or Tobramycin
         therapeuticPeak = "16-24";
         therapeuticTrough = "<2";
         maxDailyDose = Math.min(480, 7 * weight);
@@ -308,8 +312,8 @@ function calculateDose(){
         drugName += " (Oral)";
     }
 
-    /* Dose mg/kg and Interval based on CrCl - Using Extended Interval Dosing as default */
-    let mgkg, interval, intervalNote, nephroRisk, riskLevel;
+    /* Dose mg/kg and Interval based on CrCl */
+    let mgkg, interval, intervalNote, nephroRisk, riskLevel, riskClass;
 
     if (route === "oral") {
         // Oral dosing for gut decontamination
@@ -318,43 +322,51 @@ function calculateDose(){
         intervalNote = "For gut sterilization";
         nephroRisk = "Low";
         riskLevel = "Minimal systemic absorption";
+        riskClass = "low-risk";
     } else {
-        // Extended Interval (Once Daily) Dosing - Based on CrCl
+        // IV Dosing - Based on CrCl
         if (CrCl > 60) {
             mgkg = drug === "amikacin" ? 15 : 7;
             interval = "Every 24h";
             intervalNote = "Once daily";
+            nephroRisk = "Low";
+            riskLevel = "CrCl > 60 mL/min";
+            riskClass = "low-risk";
         } else if (CrCl >= 40 && CrCl <= 60) {
             mgkg = drug === "amikacin" ? 15 : 7;
             interval = "Every 36h";
             intervalNote = "Extended interval";
-        } else if (CrCl >= 20 && CrCl < 40) {
+            nephroRisk = "Low-Moderate";
+            riskLevel = "CrCl 40-60 mL/min";
+            riskClass = "low-risk";
+        } else if (CrCl >= 30 && CrCl < 40) {
             mgkg = drug === "amikacin" ? 15 : 7;
             interval = "Every 48h";
             intervalNote = "Renal adjustment";
+            nephroRisk = "Moderate";
+            riskLevel = "CrCl 30-40 mL/min";
+            riskClass = "moderate-risk";
+        } else if (CrCl >= 20 && CrCl < 30) {
+            mgkg = drug === "amikacin" ? 7.5 : 3.5;
+            interval = "Every 48h";
+            intervalNote = "Renal impairment";
+            nephroRisk = "High";
+            riskLevel = "CrCl 20-30 mL/min";
+            riskClass = "high-risk";
         } else if (CrCl >= 10 && CrCl < 20) {
             mgkg = drug === "amikacin" ? 7.5 : 3.5;
             interval = "Every 48h";
             intervalNote = "Severe renal impairment";
+            nephroRisk = "Very High";
+            riskLevel = "CrCl 10-20 mL/min";
+            riskClass = "very-high-risk";
         } else {
             mgkg = drug === "amikacin" ? 7.5 : 3.5;
             interval = "By levels";
-            intervalNote = "Monitor closely";
-        }
-
-        // Nephrotoxicity risk assessment
-        if (CrCl > 60) {
-            nephroRisk = "Low";
-            riskLevel = "Monitor renal function";
-        } else if (CrCl >= 30 && CrCl <= 60) {
-            nephroRisk = "Moderate";
-            riskLevel = "Increased monitoring";
-        } else if (CrCl >= 15 && CrCl < 30) {
-            nephroRisk = "High";
-            riskLevel = "Consider alternatives";
-        } else {
-            nephroRisk = "Very High";
-            riskLevel = "Avoid if possible";
+            intervalNote = "Critical - avoid if possible";
+            nephroRisk = "Critical";
+            riskLevel = "CrCl < 10 mL/min";
+            riskClass = "very-high-risk";
         }
     }
 
@@ -408,6 +420,10 @@ function calculateDose(){
     document.getElementById("nephroRisk").textContent = nephroRisk;
     document.getElementById("riskLevel").textContent = riskLevel;
     
+    // Update risk card class
+    const nephroCard = document.getElementById("nephroCard");
+    nephroCard.className = "result-card " + riskClass;
+    
     document.getElementById("routeWarning").textContent = routeWarning;
     document.getElementById("routeNote").textContent = routeNote;
 
@@ -423,4 +439,3 @@ function showForm(){
 
 </body>
 </html>
-
